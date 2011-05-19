@@ -16,7 +16,7 @@
 # * :hrframe: heading right frame
 # * :padding: number of padding characters for each field on each side
 #
-$template = { 
+$table_template = { 
     "simple" => { 
         :rs => '', :fs => ' | ',  :cross => '+',
         :lframe => '', :rframe => '' ,
@@ -78,11 +78,13 @@ def tabulate(labels, data, opts = { } )
     opts = { :indent => 0, :style => 'fancy'}.merge opts
     indent = opts[:indent]
     style = opts[:style]
-    raise "Invalid table style!"    unless  $template.keys.include? style
+    raise "Invalid table style!"    unless  $table_template.keys.include? style
+
+    style = $table_template[style]
 
     data = data.inject([]){|rs, r| rs += r.to_rows }
     data = data.unshift(labels).transpose
-    padding = $template[style][:padding] 
+    padding = style[:padding] 
     data = data.collect {|c| 
         c.collect {|e|  ' ' * padding + e.to_s + ' ' * padding } 
     }
@@ -93,37 +95,37 @@ def tabulate(labels, data, opts = { } )
     }
     data = newdata
     data = data.transpose
-    data = [ $template[style][:hlframe] + data[0].join($template[style][:fs]) + $template[style][:hrframe] ] + \
-        data[1..-1].collect {|l| $template[style][:lframe] + l.join($template[style][:fs]) + $template[style][:rframe] }
+    data = [ style[:hlframe] + data[0].join(style[:fs]) + style[:hrframe] ] + \
+        data[1..-1].collect {|l| style[:lframe] + l.join(style[:fs]) + style[:rframe] }
     lines = []
 
     #add top frame
-    if !$template[style][:tframe].to_s.empty?
-        lines << $template[style][:cross] + widths.collect{|n| $template[style][:tframe] *n }.join($template[style][:cross]) + $template[style][:cross]
+    if !style[:tframe].to_s.empty?
+        lines << style[:cross] + widths.collect{|n| style[:tframe] *n }.join(style[:cross]) + style[:cross]
     end
 
     #add title 
     lines << data[0]
 
     #add title ruler
-    if !$template[style][:hs].to_s.empty? and !$template[style][:lframe].to_s.empty?
-        lines << $template[style][:cross] + widths.collect{|n| $template[style][:hs] *n }.join($template[style][:cross]) + $template[style][:cross]
-    elsif !$template[style][:hs].to_s.empty?
-        lines << widths.collect{|n| $template[style][:hs] *n }.join($template[style][:cross])
+    if !style[:hs].to_s.empty? and !style[:lframe].to_s.empty?
+        lines << style[:cross] + widths.collect{|n| style[:hs] *n }.join(style[:cross]) + style[:cross]
+    elsif !style[:hs].to_s.empty?
+        lines << widths.collect{|n| style[:hs] *n }.join(style[:cross])
     end
 
     #add data
     data[1..-2].each{ |line|
         lines << line
-        if !$template[style][:rs].to_s.empty?
-            lines << $template[style][:cross] + widths.collect{|n| $template[style][:rs] *n }.join($template[style][:cross]) + $template[style][:cross]
+        if !style[:rs].to_s.empty?
+            lines << style[:cross] + widths.collect{|n| style[:rs] *n }.join(style[:cross]) + style[:cross]
         end
     }
 
     #add last record and bottom frame
     lines << data[-1]
-    if !$template[style][:bframe].to_s.empty?
-        lines << $template[style][:cross] + widths.collect{|n| $template[style][:bframe] *n }.join($template[style][:cross]) + $template[style][:cross]
+    if !style[:bframe].to_s.empty?
+        lines << style[:cross] + widths.collect{|n| style[:bframe] *n }.join(style[:cross]) + style[:cross]
     end
 
     #add indent
@@ -163,8 +165,8 @@ end
 if __FILE__ == $0
     source = [["\e[31maht\e[m",3],[4,"\e[33msomething\e[m"],['s',['abc','de']]]
     labels = ["a",'b']
-    puts "Available themes: #{$template.keys.inspect}"
-    $template.keys.each do |k|
+    puts "Available themes: #{$table_template.keys.inspect}"
+    $table_template.keys.each do |k|
         puts "#{k} :"
         puts tabulate(labels, source, :indent => 4, :style => k)
         puts 
